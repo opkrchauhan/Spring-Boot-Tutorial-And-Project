@@ -1,0 +1,76 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: API-GATEWAY
+
+  config:
+    import: configserver:http://localhost:9296
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: ORDER-SERVICE
+              uri: lb://ORDER-SERVICE
+              predicates:
+                - Path=/order/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: ORDER-SERVICE
+                    fallbackUri: forward:/orderServiceFallBack
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userKeyResolver}"
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 1
+
+            - id: PRODUCT-SERVICE
+              uri: lb://PRODUCT-SERVICE
+              predicates:
+                - Path=/product/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: PRODUCT-SERVICE
+                    fallbackUri: forward:/productServiceFallBack
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userKeyResolver}"
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 1
+
+            - id: PAYMENT-SERVICE
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/payment/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: PAYMENT-SERVICE
+                    fallbackUri: forward:/paymentServiceFallBack
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userKeyResolver}"
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 1
+management:
+  endpoint:
+    gateway:
+      access: read-only
+
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+
+  tracing:
+    sampling:
+      probability: 1.0
+
+    export:
+      zipkin:
+        endpoint: http://localhost:9411/api/v2/spans
