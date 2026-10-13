@@ -64,8 +64,8 @@ spring:
       client:
         registration:
           auth0:
-            client-id: zZ4ZAFL5NXkOn5KeCoYm5MeRT7PT5m1K
-            client-secret: tCRyVLDtw43rStmp_yvEY6LPx0v7R-LqxBfg97njhh4Ve4xmN-tSBL1g7mlSIMC4
+            client-id:${client id}
+            client-secret: ${client secret}
             scope:
               - openid
               - profile
@@ -75,7 +75,7 @@ spring:
 
         provider:
           auth0:
-            issuer-uri: "https://dev-8kf62zws4s246bym.jp.auth0.com/"
+            issuer-uri:${auth uri}
 
 auth0:
   audience: http://randome/api
