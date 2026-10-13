@@ -1,3 +1,4 @@
+
 server:
   port: 9090
 
@@ -6,7 +7,7 @@ spring:
     name: API-GATEWAY
 
   config:
-    import: configserver:http://localhost:9296
+    import: "configserver:http://localhost:9296"
 
   cloud:
     gateway:
@@ -20,7 +21,7 @@ spring:
               filters:
                 - name: CircuitBreaker
                   args:
-                    name: ORDER-SERVICE
+                    name: orderServiceCircuitBreaker
                     fallbackUri: forward:/orderServiceFallBack
                 - name: RequestRateLimiter
                   args:
@@ -35,7 +36,7 @@ spring:
               filters:
                 - name: CircuitBreaker
                   args:
-                    name: PRODUCT-SERVICE
+                    name: productServiceCircuitBreaker
                     fallbackUri: forward:/productServiceFallBack
                 - name: RequestRateLimiter
                   args:
@@ -50,27 +51,51 @@ spring:
               filters:
                 - name: CircuitBreaker
                   args:
-                    name: PAYMENT-SERVICE
+                    name: paymentServiceCircuitBreaker
                     fallbackUri: forward:/paymentServiceFallBack
                 - name: RequestRateLimiter
                   args:
                     key-resolver: "#{@userKeyResolver}"
                     redis-rate-limiter.replenishRate: 1
                     redis-rate-limiter.burstCapacity: 1
+
+  security:
+    oauth2:
+      client:
+        registration:
+          auth0:
+            client-id: zZ4ZAFL5NXkOn5KeCoYm5MeRT7PT5m1K
+            client-secret: tCRyVLDtw43rStmp_yvEY6LPx0v7R-LqxBfg97njhh4Ve4xmN-tSBL1g7mlSIMC4
+            scope:
+              - openid
+              - profile
+              - email
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+        provider:
+          auth0:
+            issuer-uri: "https://dev-8kf62zws4s246bym.jp.auth0.com/"
+
+auth0:
+  audience: http://randome/api
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 management:
   endpoint:
     gateway:
       access: read-only
-
   endpoints:
     web:
       exposure:
         include: health,info,gateway
 
-  tracing:
-    sampling:
-      probability: 1.0
+management.tracing:
+  sampling:
+    probability: 1.0
 
-    export:
-      zipkin:
-        endpoint: http://localhost:9411/api/v2/spans
+management.zipkin.tracing:
+  endpoint: "http://localhost:9411/api/v2/spans"

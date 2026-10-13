@@ -9,11 +9,13 @@ import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigB
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
 @SpringBootApplication
+@EnableWebFluxSecurity
 public class CloudGatewayApplication {
 
 	public static void main(String[] args) {
